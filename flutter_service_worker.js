@@ -3,36 +3,40 @@ const MANIFEST = 'flutter-app-manifest';
 const TEMP = 'flutter-temp-cache';
 const CACHE_NAME = 'flutter-app-cache';
 const RESOURCES = {
-  "assets/AssetManifest.json": "f80f2b5d07ff073c1c2f89bc0978e195",
+  "manifest.json": "4565ba4f18453d825c0e57b6ea02a9e1",
+"version.json": "78cebecb63d6f3ab8e67ea395bca18d7",
+"icons/Icon-512.png": "96e752610906ba2a93c65f8abe1645f1",
+"icons/Icon-192.png": "ac9a721a12bbc803b44f645561ecb1e1",
+"canvaskit/profiling/canvaskit.js": "38164e5a72bdad0faa4ce740c9b8e564",
+"canvaskit/profiling/canvaskit.wasm": "95a45378b69e77af5ed2bc72b2209b94",
+"canvaskit/canvaskit.js": "2bc454a691c631b07a9307ac4ca47797",
+"canvaskit/canvaskit.wasm": "bf50631470eb967688cca13ee181af62",
+"favicon.png": "5dcef449791fa27946b3d35ad8803796",
+"flutter.js": "f85e6fb278b0fd20c349186fb46ae36d",
+"index.html": "9c01331dba30d797e8ee48353d4dd217",
+"/": "9c01331dba30d797e8ee48353d4dd217",
+"main.dart.js": "e9d861637d2532bbb6e7535ba60b2016",
+"assets/NOTICES": "377de9576b5fd03f4dac2c41d955739e",
+"assets/shaders/ink_sparkle.frag": "1ed03b0025463b56a87ebe9d27588c8a",
+"assets/FontManifest.json": "7b2a36307916a9721811788013e65289",
+"assets/AssetManifest.json": "f80f2b5d07ff073c1c2f89bc0978e195",
+"assets/fonts/MaterialIcons-Regular.otf": "95db9098c58fd6db106f1116bae85a0b",
 "assets/assets/alipay.jpg": "2b9c6010ae04652649b978fe7a8d35c4",
-"assets/assets/audios/clean.mp3": "ac70daf98741de473dec0eacdac333e8",
-"assets/assets/audios/drop.mp3": "154540aeac037695ec1d80adfdff8936",
-"assets/assets/audios/explosion.mp3": "2c8b5dd3f51298bbeb019ce1316aa6b9",
-"assets/assets/audios/move.mp3": "389fd99cd348d712668fa34fd9738753",
-"assets/assets/audios/rotate.mp3": "23789f16afc6b9cd22711ffde1baa57f",
-"assets/assets/audios/start.mp3": "a5ca4c3bbeeb2d74b90ec1554a55cb1b",
 "assets/assets/material.png": "6daf304356cc010c1d23585c44041143",
 "assets/assets/wechat.png": "199febd121794aabdee55fb9d0aeec92",
-"assets/FontManifest.json": "7b2a36307916a9721811788013e65289",
-"assets/fonts/MaterialIcons-Regular.otf": "1288c9e28052e028aba623321f7826ac",
-"assets/NOTICES": "6979e0d32a1780647d9ce5dd875f1a33",
-"favicon.png": "5dcef449791fa27946b3d35ad8803796",
-"icons/Icon-192.png": "ac9a721a12bbc803b44f645561ecb1e1",
-"icons/Icon-512.png": "96e752610906ba2a93c65f8abe1645f1",
-"index.html": "38bf46554c9c911f4b4a6e846557c074",
-"/": "38bf46554c9c911f4b4a6e846557c074",
-"main.dart.js": "0efe0284aa835ecde4d1c5eb3a56b3b7",
-"manifest.json": "4565ba4f18453d825c0e57b6ea02a9e1",
-"version.json": "247c48668e76b71097cfe8e9413fb839"
+"assets/assets/audios/start.mp3": "a5ca4c3bbeeb2d74b90ec1554a55cb1b",
+"assets/assets/audios/drop.mp3": "154540aeac037695ec1d80adfdff8936",
+"assets/assets/audios/clean.mp3": "ac70daf98741de473dec0eacdac333e8",
+"assets/assets/audios/move.mp3": "389fd99cd348d712668fa34fd9738753",
+"assets/assets/audios/explosion.mp3": "2c8b5dd3f51298bbeb019ce1316aa6b9",
+"assets/assets/audios/rotate.mp3": "23789f16afc6b9cd22711ffde1baa57f"
 };
 
 // The application shell files that are downloaded before a service worker can
 // start.
 const CORE = [
-  "/",
-"main.dart.js",
+  "main.dart.js",
 "index.html",
-"assets/NOTICES",
 "assets/AssetManifest.json",
 "assets/FontManifest.json"];
 // During install, the TEMP cache is populated with the application shell files.
@@ -41,7 +45,7 @@ self.addEventListener("install", (event) => {
   return event.waitUntil(
     caches.open(TEMP).then((cache) => {
       return cache.addAll(
-        CORE.map((value) => new Request(value + '?revision=' + RESOURCES[value], {'cache': 'reload'})));
+        CORE.map((value) => new Request(value, {'cache': 'reload'})));
     })
   );
 });
@@ -131,9 +135,11 @@ self.addEventListener("fetch", (event) => {
     .then((cache) =>  {
       return cache.match(event.request).then((response) => {
         // Either respond with the cached resource, or perform a fetch and
-        // lazily populate the cache.
+        // lazily populate the cache only if the resource was successfully fetched.
         return response || fetch(event.request).then((response) => {
-          cache.put(event.request, response.clone());
+          if (response && Boolean(response.ok)) {
+            cache.put(event.request, response.clone());
+          }
           return response;
         });
       })
